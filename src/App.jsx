@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import Pagination from "@mui/material/Pagination"; // Importing MUI Pagination
-import "./app.css";
+import "./App.css";
 
 function App() {
   const [counters, setCounters] = useState({
