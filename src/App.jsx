@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import "./App.css";
+import Pagination from "@mui/material/Pagination"; // Importing MUI Pagination
+import "./app.css";
 
 function App() {
   const [counters, setCounters] = useState({
@@ -11,7 +12,7 @@ function App() {
   const [textInput, setTextInput] = useState("");
   const [textArray, setTextArray] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const itemsPerPage = 5; // Number of items per page fixed to 5
   const itemRef = useRef(null);
 
   useEffect(() => {
@@ -27,14 +28,6 @@ function App() {
 
   useEffect(() => {
     localStorage.setItem("textArray", JSON.stringify(textArray));
-  }, [textArray]);
-
-  useEffect(() => {
-    if (itemRef.current) {
-      const itemHeight = itemRef.current.clientHeight;
-      const maxItems = Math.floor(window.innerHeight / itemHeight);
-      setItemsPerPage(maxItems);
-    }
   }, [textArray]);
 
   const updateCounter = (counter, change) => {
@@ -61,7 +54,7 @@ function App() {
     currentPage * itemsPerPage
   );
 
-  const handlePageChange = (page) => {
+  const handlePageChange = (event, page) => {
     setCurrentPage(page);
   };
 
@@ -128,21 +121,13 @@ function App() {
           <p className="no-entries">No entries yet.</p>
         )}
 
-        <div className="pagination">
-          {Array(Math.ceil(textArray.length / itemsPerPage))
-            .fill()
-            .map((_, index) => (
-              <button
-                key={index}
-                onClick={() => handlePageChange(index + 1)}
-                className={`page-button ${
-                  currentPage === index + 1 ? "active-page" : ""
-                }`}
-              >
-                {index + 1}
-              </button>
-            ))}
-        </div>
+        <Pagination
+          count={Math.ceil(textArray.length / itemsPerPage)}
+          page={currentPage}
+          onChange={handlePageChange}
+          color="primary"
+          className="pagination"
+        />
       </div>
     </div>
   );
