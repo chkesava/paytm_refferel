@@ -1,42 +1,224 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+/* Container styling */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  background: linear-gradient(135deg, #4a90e2, #7f7fd5);
+  color: #333;
+  min-width: 100vw;
+}
+
+.dashboard {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 500px;
+  margin-bottom: 20px;
+}
+
+.dashboard-title {
   text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: black; /* Ensuring black text color */
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.counters-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+/* Counter styling */
+.counter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  color: black; /* Ensuring black text color */
+}
+
+.counter-label {
+  font-weight: 600;
+  color: #4a90e2;
+}
+
+.counter-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.counter-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.counter-button.decrement {
+  background-color: #e74c3c;
+}
+
+.counter-button.increment {
+  background-color: #2ecc71;
+}
+
+.counter-value {
+  font-size: 18px;
+  font-weight: bold;
+  color: black; /* Ensuring black text color */
+}
+
+/* Input styling */
+.input-container {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.text-input {
+  flex-grow: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  color: white; /* Ensuring black text color */
+}
+
+.submit-button {
+  padding: 10px 20px;
+  background-color: #3498db;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* Entries styling */
+.entries-container {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 500px;
+  max-height: 300px; /* Adjust this to fit the height of 5 entries */
+  overflow: hidden; /* No scrolling */
+}
+
+.entries-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #4a90e2;
+  margin-bottom: 15px;
+}
+
+.entries-list {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 15px;
+  color: black;
+}
+
+.entry-item {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  color: black;
+}
+
+.no-entries {
+  color: #999;
+}
+
+/* Pagination styling */
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+
+.page-button {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  background-color: #eee;
+  cursor: pointer;
+  color: #333;
+}
+
+.page-button.active-page {
+  background-color: #4a90e2;
+  color: #fff;
+}
+
+/* Mobile-friendly adjustments */
+@media (max-width: 768px) {
+  .app-container {
+    padding: 10px;
   }
-  to {
-    transform: rotate(360deg);
+
+  .dashboard, .entries-container {
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .counters-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .counter {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .counter-controls {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .input-container {
+    flex-direction: column;
+  }
+
+  .text-input, .submit-button {
+    width: 100%;
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+@media (max-width: 480px) {
+  .dashboard-title {
+    font-size: 20px;
   }
-}
 
-.card {
-  padding: 2em;
-}
+  .counter-label {
+    font-size: 16px;
+  }
 
-.read-the-docs {
-  color: #888;
+  .counter-button {
+    padding: 6px 12px;
+    font-size: 14px;
+  }
+
+  .entries-title {
+    font-size: 18px;
+  }
+
+  .page-button {
+    padding: 6px 10px;
+    font-size: 14px;
+  }
 }
