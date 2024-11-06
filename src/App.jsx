@@ -16,19 +16,31 @@ function App() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 3;
 
+  // Authentication state
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
+  // Hardcoded credentials
+  const predefinedUsername = "kesava";
+  const predefinedPassword = "bhanu@123";
+
+  // Fetch data if authenticated
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const counterRes = await axios.get(`${API_BASE_URL}/api/counters`);
-        const textArrayRes = await axios.get(`${API_BASE_URL}/api/entries`);
-        setCounters(counterRes.data);
-        setTextArray(textArrayRes.data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-    fetchData();
-  }, []);
+    if (isAuthenticated) {
+      const fetchData = async () => {
+        try {
+          const counterRes = await axios.get(`${API_BASE_URL}/api/counters`);
+          const textArrayRes = await axios.get(`${API_BASE_URL}/api/entries`);
+          setCounters(counterRes.data);
+          setTextArray(textArrayRes.data);
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        }
+      };
+      fetchData();
+    }
+  }, [isAuthenticated]);
 
   const updateCounter = async (counter, change) => {
     try {
@@ -69,6 +81,51 @@ function App() {
     setCurrentPage(page);
   };
 
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (username === predefinedUsername && password === predefinedPassword) {
+      setIsAuthenticated(true);
+    } else {
+      alert("Incorrect username or password.");
+    }
+  };
+
+  // If not authenticated, show login form
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500 flex items-center justify-center w-screen">
+        <div className="max-w-sm w-full bg-white rounded-lg shadow-lg p-6">
+          <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">Login</h2>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="p-3 w-full rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-300"
+              placeholder="Username"
+              required
+            />
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="p-3 w-full rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-300"
+              placeholder="Password"
+              required
+            />
+            <button
+              type="submit"
+              className="w-full bg-teal-500 text-white py-3 rounded-lg hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-300"
+            >
+              Login
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  // If authenticated, show the dashboard
   return (
     <div className="min-h-screen bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500 p-6 w-screen">
       <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-2xl p-6">
