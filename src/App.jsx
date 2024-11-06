@@ -26,7 +26,6 @@ function App() {
       try {
         const counterRes = await axios.get(`${API_BASE_URL}/api/counters`);
         const res = counterRes.data;
-        console.log(res);
         const textArrayRes = await axios.get(`${API_BASE_URL}/api/entries`);
         setCounters(counterRes.data);
         setTextArray(textArrayRes.data);
