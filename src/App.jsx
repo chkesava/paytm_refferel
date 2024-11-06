@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios"; // Import axios
-import Pagination from "@mui/material/Pagination"; // Import Pagination from Material-UI
-import Skeleton from "@mui/material/Skeleton"; // Import Skeleton loader
+import axios from "axios";
 import "./App.css";
 
-const API_BASE_URL = "https://paytm-backend-atpg.onrender.com"; // Your backend base URL
+const API_BASE_URL = "https://paytm-backend-atpg.onrender.com";
 
 function App() {
   const [counters, setCounters] = useState({
@@ -16,46 +14,44 @@ function App() {
   const [textInput, setTextInput] = useState("");
   const [textArray, setTextArray] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [loading, setLoading] = useState(true); // Loading state for API calls
-  const itemsPerPage = 5;
+  const itemsPerPage = 3;
 
-  // Load counters and text array from the backend on component mount
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true); // Set loading to true before API calls
       try {
         const counterRes = await axios.get(`${API_BASE_URL}/api/counters`);
-        const res = counterRes.data;
         const textArrayRes = await axios.get(`${API_BASE_URL}/api/entries`);
         setCounters(counterRes.data);
         setTextArray(textArrayRes.data);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
-      setLoading(false); // Set loading to false after API calls
     };
     fetchData();
   }, []);
 
-  // Update counters in the backend
   const updateCounter = async (counter, change) => {
     try {
       const newValue = counters[counter] + change;
-      const updatedCounters = { ...counters, [counter]: newValue < 0 ? 0 : newValue };
-      await axios.put(`${API_BASE_URL}/api/counters/${counter}`, { value: updatedCounters[counter] }); // Update on backend
-      setCounters(updatedCounters); // Update local state
+      if (newValue < 0) return; // Prevents negative values
+
+      await axios.put(`${API_BASE_URL}/api/counters/${counter}`, { value: newValue });
+
+      setCounters((prevCounters) => ({
+        ...prevCounters,
+        [counter]: newValue,
+      }));
     } catch (error) {
       console.error("Error updating counter:", error);
     }
   };
 
-  // Add text input to the backend and update text array
   const handleTextSubmit = async () => {
     if (textInput.trim()) {
       try {
-        const updatedArray = [textInput, ...textArray].slice(0, 50);
-        await axios.post(`${API_BASE_URL}/api/entries`, { text: textInput }); // Add new text to backend
-        setTextArray(updatedArray); // Update local state
+        await axios.post(`${API_BASE_URL}/api/entries`, { text: textInput });
+        const textArrayRes = await axios.get(`${API_BASE_URL}/api/entries`);
+        setTextArray(textArrayRes.data);
         setTextInput("");
         setCurrentPage(1);
       } catch (error) {
@@ -69,7 +65,7 @@ function App() {
     currentPage * itemsPerPage
   );
 
-  const handlePageChange = (event, page) => {
+  const handlePageChange = (page) => {
     setCurrentPage(page);
   };
 
@@ -77,25 +73,53 @@ function App() {
     <div className="min-h-screen bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500 p-6 w-screen">
       <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-2xl p-6">
         <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">Counter Dashboard</h1>
-        
+
         {/* Counters Section */}
-        <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {Object.entries(counters)
-            .filter(([key]) => key !== '_id' && key !== '__v') // Filter out _id and __v
+            .filter(([key]) => key !== '_id' && key !== '__v')
             .map(([counter, value]) => (
               <div key={counter} className="bg-gradient-to-r from-teal-400 to-blue-500 p-6 rounded-lg shadow-lg text-center">
                 <h2 className="text-lg font-semibold text-white mb-3">{counter}</h2>
                 <p className="text-3xl font-extrabold text-white">{value}</p>
-                <button
-                  onClick={() => updateCounter(counter, value + 1)}
-                  className="mt-4 bg-teal-500 text-white py-2 px-6 rounded-full hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-300"
-                >
-                  Increment
-                </button>
+                <div className="flex flex-col space-y-2 lg:flex-col items-center justify-center mt-4">
+                  <button
+                    onClick={() => updateCounter(counter, 1)}
+                    className="bg-teal-500 text-white py-2 px-4 md:px-6 rounded-full hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-300 text-sm md:text-base w-full lg:w-auto"
+                  >
+                    Increment
+                  </button>
+                  <button
+                    onClick={() => updateCounter(counter, -1)}
+                    className="bg-red-500 text-white py-2 px-4 md:px-6 rounded-full hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300 text-sm md:text-base w-full lg:w-auto"
+                  >
+                    Decrement
+                  </button>
+                </div>
               </div>
             ))}
         </div>
-        
+
+        {/* Text Input Section */}
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold text-gray-800 mb-3">Add a New Entry</h2>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <input
+              type="text"
+              value={textInput}
+              onChange={(e) => setTextInput(e.target.value)}
+              className="p-3 w-full sm:w-2/3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-300"
+              placeholder="Enter new entry"
+            />
+            <button
+              onClick={handleTextSubmit}
+              className="w-full sm:w-1/3 bg-teal-500 text-white py-3 rounded-lg hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-300"
+            >
+              Add Entry
+            </button>
+          </div>
+        </div>
+
         {/* Entries Section */}
         <div className="bg-gray-50 rounded-lg p-6 mb-6 shadow-xl">
           <h2 className="text-xl font-semibold mb-6 text-gray-800">Entries</h2>
@@ -106,9 +130,9 @@ function App() {
               </li>
             ))}
           </ul>
-          
+
           {/* Pagination */}
-          <div className="flex justify-center mt-6">
+          <div className="flex justify-center items-center mt-6 space-x-4">
             <button
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
@@ -128,23 +152,6 @@ function App() {
             </button>
           </div>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function Counter({ label, count, onIncrement, onDecrement }) {
-  return (
-    <div className="counter">
-      <span className="counter-label">{label}</span>
-      <div className="counter-controls">
-        <button onClick={onDecrement} className="counter-button decrement">
-          -1
-        </button>
-        <span className="counter-value">{count}</span>
-        <button onClick={onIncrement} className="counter-button increment">
-          +1
-        </button>
       </div>
     </div>
   );
