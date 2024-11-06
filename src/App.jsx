@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios"; // Import axios
 import Pagination from "@mui/material/Pagination"; // Import Pagination from Material-UI
 import Skeleton from "@mui/material/Skeleton"; // Import Skeleton loader
-import "./app.css";
+import "./App.css";
 
 const API_BASE_URL = "https://paytm-backend-atpg.onrender.com"; // Your backend base URL
 
