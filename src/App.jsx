@@ -1,6 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
-import Pagination from "@mui/material/Pagination"; // Importing MUI Pagination
+import React, { useState, useEffect } from "react";
+import axios from "axios"; // Import axios
+import Pagination from "@mui/material/Pagination"; // Import Pagination from Material-UI
+import Skeleton from "@mui/material/Skeleton"; // Import Skeleton loader
 import "./app.css";
+
+const API_BASE_URL = "https://paytm-backend-atpg.onrender.com"; // Your backend base URL
 
 function App() {
   const [counters, setCounters] = useState({
@@ -12,40 +16,52 @@ function App() {
   const [textInput, setTextInput] = useState("");
   const [textArray, setTextArray] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5; // Number of items per page fixed to 5
-  const itemRef = useRef(null);
+  const [loading, setLoading] = useState(true); // Loading state for API calls
+  const itemsPerPage = 5;
 
+  // Load counters and text array from the backend on component mount
   useEffect(() => {
-    const savedCounters = JSON.parse(localStorage.getItem("counters"));
-    const savedTextArray = JSON.parse(localStorage.getItem("textArray"));
-    if (savedCounters) setCounters(savedCounters);
-    if (savedTextArray) setTextArray(savedTextArray);
+    const fetchData = async () => {
+      setLoading(true); // Set loading to true before API calls
+      try {
+        const counterRes = await axios.get(`${API_BASE_URL}/api/counters`);
+        const res = counterRes.data;
+        console.log(res);
+        const textArrayRes = await axios.get(`${API_BASE_URL}/api/entries`);
+        setCounters(counterRes.data);
+        setTextArray(textArrayRes.data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+      setLoading(false); // Set loading to false after API calls
+    };
+    fetchData();
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem("counters", JSON.stringify(counters));
-  }, [counters]);
-
-  useEffect(() => {
-    localStorage.setItem("textArray", JSON.stringify(textArray));
-  }, [textArray]);
-
-  const updateCounter = (counter, change) => {
-    setCounters((prevCounters) => {
-      const newValue = prevCounters[counter] + change;
-      return {
-        ...prevCounters,
-        [counter]: newValue < 0 ? 0 : newValue,
-      };
-    });
+  // Update counters in the backend
+  const updateCounter = async (counter, change) => {
+    try {
+      const newValue = counters[counter] + change;
+      const updatedCounters = { ...counters, [counter]: newValue < 0 ? 0 : newValue };
+      await axios.put(`${API_BASE_URL}/api/counters/${counter}`, { value: updatedCounters[counter] }); // Update on backend
+      setCounters(updatedCounters); // Update local state
+    } catch (error) {
+      console.error("Error updating counter:", error);
+    }
   };
 
-  const handleTextSubmit = () => {
+  // Add text input to the backend and update text array
+  const handleTextSubmit = async () => {
     if (textInput.trim()) {
-      const updatedArray = [textInput, ...textArray].slice(0, 50);
-      setTextArray(updatedArray);
-      setTextInput("");
-      setCurrentPage(1);
+      try {
+        const updatedArray = [textInput, ...textArray].slice(0, 50);
+        await axios.post(`${API_BASE_URL}/api/entries`, { text: textInput }); // Add new text to backend
+        setTextArray(updatedArray); // Update local state
+        setTextInput("");
+        setCurrentPage(1);
+      } catch (error) {
+        console.error("Error adding text:", error);
+      }
     }
   };
 
@@ -59,75 +75,60 @@ function App() {
   };
 
   return (
-    <div className="app-container">
-      <div className="dashboard">
-        <h1 className="dashboard-title">Counter Dashboard</h1>
-
-        <div className="counters-container">
-          <Counter
-            label="Completed"
-            count={counters.completed}
-            onIncrement={() => updateCounter("completed", 1)}
-            onDecrement={() => updateCounter("completed", -1)}
-          />
-
-          <Counter
-            label="Half-Completed"
-            count={counters.halfCompleted}
-            onIncrement={() => updateCounter("halfCompleted", 1)}
-            onDecrement={() => updateCounter("halfCompleted", -1)}
-          />
-
-          <Counter
-            label="Registered-NoPayment"
-            count={counters.registeredNoPayment}
-            onIncrement={() => updateCounter("registeredNoPayment", 1)}
-            onDecrement={() => updateCounter("registeredNoPayment", -1)}
-          />
-
-          <Counter
-            label="Wasted"
-            count={counters.wasted}
-            onIncrement={() => updateCounter("wasted", 1)}
-            onDecrement={() => updateCounter("wasted", -1)}
-          />
+    <div className="min-h-screen bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500 p-6 w-screen">
+      <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-2xl p-6">
+        <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">Counter Dashboard</h1>
+        
+        {/* Counters Section */}
+        <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4 mb-6">
+          {Object.entries(counters)
+            .filter(([key]) => key !== '_id' && key !== '__v') // Filter out _id and __v
+            .map(([counter, value]) => (
+              <div key={counter} className="bg-gradient-to-r from-teal-400 to-blue-500 p-6 rounded-lg shadow-lg text-center">
+                <h2 className="text-lg font-semibold text-white mb-3">{counter}</h2>
+                <p className="text-3xl font-extrabold text-white">{value}</p>
+                <button
+                  onClick={() => updateCounter(counter, value + 1)}
+                  className="mt-4 bg-teal-500 text-white py-2 px-6 rounded-full hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-300"
+                >
+                  Increment
+                </button>
+              </div>
+            ))}
         </div>
-
-        <div className="input-container">
-          <input
-            type="text"
-            value={textInput}
-            onChange={(e) => setTextInput(e.target.value)}
-            className="text-input"
-            placeholder="Enter text"
-          />
-          <button onClick={handleTextSubmit} className="submit-button">
-            Add Text
-          </button>
-        </div>
-      </div>
-
-      <div className="entries-container">
-        <h2 className="entries-title">Latest Entries</h2>
-        {displayedTextArray.length > 0 ? (
-          <ul className="entries-list">
-            {displayedTextArray.map((text, index) => (
-              <li key={index} className="entry-item" ref={index === 0 ? itemRef : null}>
-                {text}
+        
+        {/* Entries Section */}
+        <div className="bg-gray-50 rounded-lg p-6 mb-6 shadow-xl">
+          <h2 className="text-xl font-semibold mb-6 text-gray-800">Entries</h2>
+          <ul className="space-y-4">
+            {displayedTextArray.map((entry) => (
+              <li key={entry._id} className="bg-white p-4 rounded-lg shadow-lg transition-transform transform hover:scale-105 duration-300 ease-in-out">
+                <p className="text-lg text-gray-800">{entry.text}</p>
               </li>
             ))}
           </ul>
-        ) : (
-          <p className="no-entries">No entries yet.</p>
-        )}
-
-        <Pagination
-          count={Math.ceil(textArray.length / itemsPerPage)}
-          page={currentPage}
-          onChange={handlePageChange}
-          color="primary"
-          className="pagination"
-        />
+          
+          {/* Pagination */}
+          <div className="flex justify-center mt-6">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-5 py-2 bg-teal-500 text-white rounded-full hover:bg-teal-600 disabled:opacity-50 transition-colors"
+            >
+              Previous
+            </button>
+            <span className="px-4 py-2 text-lg text-gray-700">
+              Page {currentPage}
+            </span>
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage * itemsPerPage >= textArray.length}
+              className="px-5 py-2 bg-teal-500 text-white rounded-full hover:bg-teal-600 disabled:opacity-50 transition-colors"
+            >
+              Next
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
